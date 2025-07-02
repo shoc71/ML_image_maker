@@ -20,15 +20,23 @@
 
   <h2>Mock Painter (Web)</h2>
 
+  <!-- Canvas Size Inputs -->
   <label>Width: <input type="number" id="canvasWidth" value="64" min="1"></label>
   <label>Height: <input type="number" id="canvasHeight" value="64" min="1"></label>
-  <button onclick="setCanvasSize()">Set Canvas Size</button>
+  <button onclick="setCanvasSize()">Set Canvas Size</button><br>
 
-  <canvas id="drawingCanvas" width="64" height="64"></canvas><br>
+  <!-- Canvas Element -->
+  <canvas id="drawingCanvas" width="64" height="64"></canvas>
 
+  <!-- Controls -->
   <button onclick="undo()">Undo</button>
-  <button onclick="saveCurrent()">Save Drawing</button>
+  <button onclick="saveCurrent()">Save Drawing</button><br>
+
+  <!-- Resize Before Download Inputs -->
+  <label>Target Width: <input type="number" id="targetWidth" value="64" min="1"></label>
+  <label>Target Height: <input type="number" id="targetHeight" value="64" min="1"></label>
   <button onclick="downloadAll()">Download All Drawings (ZIP)</button>
+
   <p id="status"></p>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -41,6 +49,7 @@
     let strokes = [];
     let drawings = [];
 
+    // Drawing events
     canvas.addEventListener('mousedown', (e) => {
       drawing = true;
       strokes.push([{ x: e.offsetX, y: e.offsetY }]);
@@ -87,50 +96,6 @@
       statusText.textContent = `Saved drawing ${drawings.length} (${canvas.width}x${canvas.height})`;
     }
 
-    function downloadAll() {
-      if (drawings.length === 0) {
-        alert("No drawings to download.");
-        return;
-      }
-    
-      const targetWidth = parseInt(document.getElementById('targetWidth').value);
-      const targetHeight = parseInt(document.getElementById('targetHeight').value);
-    
-      if (isNaN(targetWidth) || isNaN(targetHeight) || targetWidth <= 0 || targetHeight <= 0) {
-        alert("Please enter valid positive numbers for target width and height.");
-        return;
-      }
-    
-      const zip = new JSZip();
-      const offscreenCanvas = document.createElement('canvas');
-      const offCtx = offscreenCanvas.getContext('2d');
-      offscreenCanvas.width = targetWidth;
-      offscreenCanvas.height = targetHeight;
-    
-      drawings.forEach((dataUrl, index) => {
-        const img = new Image();
-        img.src = dataUrl;
-        img.onload = () => {
-          offCtx.clearRect(0, 0, targetWidth, targetHeight);
-          offCtx.drawImage(img, 0, 0, targetWidth, targetHeight);
-          const resizedDataUrl = offscreenCanvas.toDataURL("image/png");
-          const base64 = resizedDataUrl.split(',')[1];
-          zip.file(`drawing_${index + 1}.png`, base64, { base64: true });
-    
-          // Once all images processed, generate ZIP
-          if (index === drawings.length - 1) {
-            zip.generateAsync({ type: "blob" }).then(blob => {
-              const a = document.createElement("a");
-              a.href = URL.createObjectURL(blob);
-              a.download = "drawings_scaled.zip";
-              a.click();
-              URL.revokeObjectURL(a.href);
-            });
-          }
-        };
-      });
-    }
-
     function setCanvasSize() {
       const newWidth = parseInt(document.getElementById('canvasWidth').value);
       const newHeight = parseInt(document.getElementById('canvasHeight').value);
@@ -145,6 +110,52 @@
       strokes = [];
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       statusText.textContent = `Canvas resized to ${newWidth}x${newHeight}`;
+    }
+
+    function downloadAll() {
+      if (drawings.length === 0) {
+        alert("No drawings to download.");
+        return;
+      }
+
+      const targetWidth = parseInt(document.getElementById('targetWidth').value);
+      const targetHeight = parseInt(document.getElementById('targetHeight').value);
+
+      if (isNaN(targetWidth) || isNaN(targetHeight) || targetWidth <= 0 || targetHeight <= 0) {
+        alert("Please enter valid positive numbers for target width and height.");
+        return;
+      }
+
+      const zip = new JSZip();
+      const offscreenCanvas = document.createElement('canvas');
+      const offCtx = offscreenCanvas.getContext('2d');
+      offscreenCanvas.width = targetWidth;
+      offscreenCanvas.height = targetHeight;
+
+      let processed = 0;
+
+      drawings.forEach((dataUrl, index) => {
+        const img = new Image();
+        img.onload = () => {
+          offCtx.clearRect(0, 0, targetWidth, targetHeight);
+          offCtx.drawImage(img, 0, 0, targetWidth, targetHeight);
+          const resizedDataUrl = offscreenCanvas.toDataURL("image/png");
+          const base64 = resizedDataUrl.split(',')[1];
+          zip.file(`drawing_${index + 1}.png`, base64, { base64: true });
+
+          processed++;
+          if (processed === drawings.length) {
+            zip.generateAsync({ type: "blob" }).then(blob => {
+              const a = document.createElement("a");
+              a.href = URL.createObjectURL(blob);
+              a.download = "drawings_scaled.zip";
+              a.click();
+              URL.revokeObjectURL(a.href);
+            });
+          }
+        };
+        img.src = dataUrl;
+      });
     }
   </script>
 
