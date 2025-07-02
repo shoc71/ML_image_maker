@@ -32,9 +32,10 @@
   <button onclick="undo()">Undo</button>
   <button onclick="saveCurrent()">Save Drawing</button><br>
 
-  <!-- Resize Before Download Inputs -->
+  <!-- Resize and Naming Inputs -->
   <label>Target Width: <input type="number" id="targetWidth" value="64" min="1"></label>
-  <label>Target Height: <input type="number" id="targetHeight" value="64" min="1"></label>
+  <label>Target Height: <input type="number" id="targetHeight" value="64" min="1"></label><br>
+  <label>Filename Prefix: <input type="text" id="filenamePrefix" placeholder="e.g. cat"></label>
   <button onclick="downloadAll()">Download All Drawings (ZIP)</button>
 
   <p id="status"></p>
@@ -49,7 +50,6 @@
     let strokes = [];
     let drawings = [];
 
-    // Drawing events
     canvas.addEventListener('mousedown', (e) => {
       drawing = true;
       strokes.push([{ x: e.offsetX, y: e.offsetY }]);
@@ -112,6 +112,11 @@
       statusText.textContent = `Canvas resized to ${newWidth}x${newHeight}`;
     }
 
+    function getRandomID(length = 6) {
+      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    }
+
     function downloadAll() {
       if (drawings.length === 0) {
         alert("No drawings to download.");
@@ -120,6 +125,7 @@
 
       const targetWidth = parseInt(document.getElementById('targetWidth').value);
       const targetHeight = parseInt(document.getElementById('targetHeight').value);
+      const prefixInput = document.getElementById('filenamePrefix').value.trim() || "drawing";
 
       if (isNaN(targetWidth) || isNaN(targetHeight) || targetWidth <= 0 || targetHeight <= 0) {
         alert("Please enter valid positive numbers for target width and height.");
@@ -141,7 +147,9 @@
           offCtx.drawImage(img, 0, 0, targetWidth, targetHeight);
           const resizedDataUrl = offscreenCanvas.toDataURL("image/png");
           const base64 = resizedDataUrl.split(',')[1];
-          zip.file(`drawing_${index + 1}.png`, base64, { base64: true });
+          const randomID = getRandomID();
+          const filename = `test_${prefixInput}_${randomID}.png`;
+          zip.file(filename, base64, { base64: true });
 
           processed++;
           if (processed === drawings.length) {
