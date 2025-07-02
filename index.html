@@ -4,15 +4,52 @@
   <meta charset="UTF-8">
   <title>Web Painter App</title>
   <style>
+    :root {
+      --bg-color: #ffffff;
+      --text-color: #000000;
+      --button-bg: #f0f0f0;
+      --canvas-border: #000000;
+    }
+
+    body.dark {
+      --bg-color: #1e1e1e;
+      --text-color: #ffffff;
+      --button-bg: #333333;
+      --canvas-border: #ffffff;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+
     canvas {
-      border: 1px solid black;
+      border: 1px solid var(--canvas-border);
       background-color: white;
       image-rendering: pixelated;
       display: block;
-      margin-bottom: 10px;
+      margin: 0 auto 10px;
     }
+
     button, input {
       margin: 5px;
+      padding: 5px 10px;
+      background-color: var(--button-bg);
+      color: var(--text-color);
+      border: 1px solid var(--canvas-border);
+      border-radius: 4px;
+    }
+
+    label {
+      margin: 5px;
+    }
+
+    #controls {
+      margin-bottom: 20px;
     }
   </style>
 </head>
@@ -20,23 +57,30 @@
 
   <h2>Mock Painter (Web)</h2>
 
-  <!-- Canvas Size Inputs -->
-  <label>Width: <input type="number" id="canvasWidth" value="64" min="1"></label>
-  <label>Height: <input type="number" id="canvasHeight" value="64" min="1"></label>
-  <button onclick="setCanvasSize()">Set Canvas Size</button><br>
+  <div id="controls">
+    <!-- Canvas Size Inputs -->
+    <label>Width: <input type="number" id="canvasWidth" value="64" min="1"></label>
+    <label>Height: <input type="number" id="canvasHeight" value="64" min="1"></label>
+    <button onclick="setCanvasSize()">Set Canvas Size</button>
+    <button onclick="toggleDarkMode()">Toggle Dark Mode</button>
+  </div>
 
   <!-- Canvas Element -->
   <canvas id="drawingCanvas" width="64" height="64"></canvas>
 
-  <!-- Controls -->
-  <button onclick="undo()">Undo</button>
-  <button onclick="saveCurrent()">Save Drawing</button><br>
+  <!-- Drawing Controls -->
+  <div>
+    <button onclick="undo()">Undo</button>
+    <button onclick="saveCurrent()">Save Drawing</button>
+  </div>
 
   <!-- Resize and Naming Inputs -->
-  <label>Target Width: <input type="number" id="targetWidth" value="64" min="1"></label>
-  <label>Target Height: <input type="number" id="targetHeight" value="64" min="1"></label><br>
-  <label>Filename Prefix: <input type="text" id="filenamePrefix" placeholder="e.g. cat"></label>
-  <button onclick="downloadAll()">Download All Drawings (ZIP)</button>
+  <div>
+    <label>Target Width: <input type="number" id="targetWidth" value="64" min="1"></label>
+    <label>Target Height: <input type="number" id="targetHeight" value="64" min="1"></label><br>
+    <label>Filename Prefix: <input type="text" id="filenamePrefix" placeholder="e.g. cat"></label>
+    <button onclick="downloadAll()">Download All Drawings (ZIP)</button>
+  </div>
 
   <p id="status"></p>
 
@@ -50,6 +94,7 @@
     let strokes = [];
     let drawings = [];
 
+    // Drawing logic
     canvas.addEventListener('mousedown', (e) => {
       drawing = true;
       strokes.push([{ x: e.offsetX, y: e.offsetY }]);
@@ -164,6 +209,10 @@
         };
         img.src = dataUrl;
       });
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark');
     }
   </script>
 
