@@ -112,7 +112,7 @@
       statusText.textContent = `Canvas resized to ${newWidth}x${newHeight}`;
     }
 
-    function getRandomID(length = 6) {
+    function getRandomID(length = 24) {
       const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
       return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
     }
