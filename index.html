@@ -8,10 +8,8 @@
       border: 1px solid black;
       background-color: white;
       image-rendering: pixelated;
-      display: block;
-      margin-bottom: 10px;
     }
-    button, input {
+    button {
       margin: 5px;
     }
   </style>
@@ -19,13 +17,7 @@
 <body>
 
   <h2>Mock Painter (Web)</h2>
-
-  <label>Width: <input type="number" id="canvasWidth" value="64" min="1"></label>
-  <label>Height: <input type="number" id="canvasHeight" value="64" min="1"></label>
-  <button onclick="setCanvasSize()">Set Canvas Size</button>
-
   <canvas id="drawingCanvas" width="64" height="64"></canvas><br>
-
   <button onclick="undo()">Undo</button>
   <button onclick="saveCurrent()">Save Drawing</button>
   <button onclick="downloadAll()">Download All Drawings (ZIP)</button>
@@ -84,7 +76,7 @@
       drawings.push(image);
       strokes = [];
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      statusText.textContent = `Saved drawing ${drawings.length} (${canvas.width}x${canvas.height})`;
+      statusText.textContent = Saved drawing ${drawings.length} (64x64);
     }
 
     function downloadAll() {
@@ -96,7 +88,7 @@
       const zip = new JSZip();
       drawings.forEach((dataUrl, index) => {
         const base64 = dataUrl.split(',')[1];
-        zip.file(`drawing_${index + 1}.png`, base64, { base64: true });
+        zip.file(drawing_${index + 1}.png, base64, { base64: true });
       });
 
       zip.generateAsync({ type: "blob" }).then(blob => {
@@ -106,22 +98,6 @@
         a.click();
         URL.revokeObjectURL(a.href);
       });
-    }
-
-    function setCanvasSize() {
-      const newWidth = parseInt(document.getElementById('canvasWidth').value);
-      const newHeight = parseInt(document.getElementById('canvasHeight').value);
-
-      if (isNaN(newWidth) || isNaN(newHeight) || newWidth <= 0 || newHeight <= 0) {
-        alert("Please enter valid positive numbers for width and height.");
-        return;
-      }
-
-      canvas.width = newWidth;
-      canvas.height = newHeight;
-      strokes = [];
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      statusText.textContent = `Canvas resized to ${newWidth}x${newHeight}`;
     }
   </script>
 
