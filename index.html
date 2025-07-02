@@ -92,19 +92,42 @@
         alert("No drawings to download.");
         return;
       }
-
+    
+      const targetWidth = parseInt(document.getElementById('targetWidth').value);
+      const targetHeight = parseInt(document.getElementById('targetHeight').value);
+    
+      if (isNaN(targetWidth) || isNaN(targetHeight) || targetWidth <= 0 || targetHeight <= 0) {
+        alert("Please enter valid positive numbers for target width and height.");
+        return;
+      }
+    
       const zip = new JSZip();
+      const offscreenCanvas = document.createElement('canvas');
+      const offCtx = offscreenCanvas.getContext('2d');
+      offscreenCanvas.width = targetWidth;
+      offscreenCanvas.height = targetHeight;
+    
       drawings.forEach((dataUrl, index) => {
-        const base64 = dataUrl.split(',')[1];
-        zip.file(`drawing_${index + 1}.png`, base64, { base64: true });
-      });
-
-      zip.generateAsync({ type: "blob" }).then(blob => {
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = "drawings.zip";
-        a.click();
-        URL.revokeObjectURL(a.href);
+        const img = new Image();
+        img.src = dataUrl;
+        img.onload = () => {
+          offCtx.clearRect(0, 0, targetWidth, targetHeight);
+          offCtx.drawImage(img, 0, 0, targetWidth, targetHeight);
+          const resizedDataUrl = offscreenCanvas.toDataURL("image/png");
+          const base64 = resizedDataUrl.split(',')[1];
+          zip.file(`drawing_${index + 1}.png`, base64, { base64: true });
+    
+          // Once all images processed, generate ZIP
+          if (index === drawings.length - 1) {
+            zip.generateAsync({ type: "blob" }).then(blob => {
+              const a = document.createElement("a");
+              a.href = URL.createObjectURL(blob);
+              a.download = "drawings_scaled.zip";
+              a.click();
+              URL.revokeObjectURL(a.href);
+            });
+          }
+        };
       });
     }
 
